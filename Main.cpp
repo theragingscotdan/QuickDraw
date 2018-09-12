@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 
 
 int main()
@@ -10,6 +12,9 @@ int main()
 	sf::RenderWindow gameWindow;
 	gameWindow.create(sf::VideoMode::getDesktopMode(), "Quick Draw",
 		sf::Style::Titlebar | sf::Style::Close);
+
+	// seed our random number generation
+	srand(time(NULL));
 
 	// create button sprite
 	sf::Texture buttonTexture;
@@ -27,7 +32,7 @@ int main()
 	sf::Time timeLimit = sf::seconds(10.0f);
 	sf::Time timeRemaining = timeLimit;
 	sf::Clock gameClock;
-	sf::Time timetillSignal = sf::seconds(0.0f);
+	sf::Time timetillSignal = sf::seconds(signalTimeLowerLimit);
 	sf::Time timesinceSignal = sf::seconds(0.0f);
 
 
@@ -42,13 +47,29 @@ int main()
 		while (gameWindow.pollEvent(gameEvent))
 		{
 
-
+			if (gameEvent.type == sf::Event::MouseButtonPressed)
+			{
+				if (buttonSprite.getGlobalBounds().contains(gameEvent.mouseButton.x, gameEvent.mouseButton.y))
+				{
+					//we did
+					int range = (int)(signalTimeUpperLimit - signalTimeLowerLimit);
+					float signalSeconds = rand() % range + signalTimeLowerLimit;
+					timetillSignal = sf::seconds(signalSeconds);
+				}
+			}
 			// Process events
 
 			// Update game state
 
 			// timer
 			sf::Time frameTime = gameClock.restart();
+
+			timetillSignal = timetillSignal - frameTime;
+			
+			if (timetillSignal.asSeconds() <= 0.0f)
+			{
+				buttonSprite.setColor(sf::Color::Green);
+			}
 		
 			//check if the event is the closed event
 			if (gameEvent.type == sf::Event::Closed)
